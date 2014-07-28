@@ -1,6 +1,7 @@
 package com.hypnoticocelot.jaxrs.doclet.parser;
 
 import com.google.common.base.Predicate;
+import com.google.common.base.Strings;
 import com.hypnoticocelot.jaxrs.doclet.DocletOptions;
 import com.hypnoticocelot.jaxrs.doclet.model.Model;
 import com.hypnoticocelot.jaxrs.doclet.model.Property;
@@ -34,11 +35,18 @@ public class ApiModelParser {
         boolean isPrimitive = /* type.isPrimitive()? || */ AnnotationHelper.isPrimitive(type);
         boolean isJavaxType = type.qualifiedTypeName().startsWith("javax.");
         boolean isBaseObject = type.qualifiedTypeName().equals("java.lang.Object");
-        boolean isTypeToTreatAsOpaque = options.getTypesToTreatAsOpaque().contains(type.qualifiedTypeName());
+        // Premer 2014-07-28: stanasic ////////////////////////////////////////////////////////////////////////////////////
+        boolean isTypeToTreatAsOpaque = options.getTypesToTreatAsOpaque().contains(type.qualifiedTypeName())
+                        || startsWithAny(options.getPackagesToTreatAsOpaque(), type.qualifiedTypeName());
         ClassDoc classDoc = type.asClassDoc();
-        if (isPrimitive || isJavaxType || isBaseObject || isTypeToTreatAsOpaque || classDoc == null || alreadyStoredType(type)) {
+        if (isPrimitive || isJavaxType || isBaseObject || isTypeToTreatAsOpaque || classDoc == null) {
+            System.out.println("ApiModelParser.parseModel(): Skipping " + type.qualifiedTypeName());
             return;
         }
+        if (alreadyStoredType(type)) {
+            return;
+        }
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         Map<String, Type> types = findReferencedTypes(classDoc);
         Map<String, Property> elements = findReferencedElements(types);
@@ -47,6 +55,17 @@ public class ApiModelParser {
             parseNestedModels(types.values());
         }
     }
+    
+    // Premer 2014-07-28: stanasic ////////////////////////////////////////////////////////////////////////////////////
+    private boolean startsWithAny(List<String> packagesToTreatAsOpaque, String qualifiedTypeName) {
+        for (String packageName : packagesToTreatAsOpaque) {
+            if (!Strings.isNullOrEmpty(packageName) && qualifiedTypeName.startsWith(packageName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     private Map<String, Type> findReferencedTypes(ClassDoc classDoc) {
         Map<String, Type> elements = new HashMap<String, Type>();
