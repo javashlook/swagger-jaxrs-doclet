@@ -60,7 +60,12 @@
     </repositories>
 
     <distributionManagement>
-        <snapshotRepository>
+		<!-- Premer 2014-07-28: stanasic -->
+		<snapshotRepository>
+            <id>project</id>
+            <url>file:///D:/Workspace/premer/Poins/Poins-Backend/repository</url>
+        </snapshotRepository>
+<!-- 		<snapshotRepository>
             <id>sonatype-nexus-snapshots</id>
             <name>Sonatype Nexus Snapshots</name>
             <url>http://oss.sonatype.org/content/repositories/snapshots</url>
@@ -70,6 +75,7 @@
             <name>Nexus Release Repository</name>
             <url>http://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
+ -->		
     </distributionManagement>
 
     <profiles>
